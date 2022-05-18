@@ -198,4 +198,9 @@ class UserApiController extends Controller
             return response()->json(["message" => $message]);
         }
     }
+
+    //register Using Passport
+    public function registerApiUsingPassport(Request $request)
+    {
+    }
 }
