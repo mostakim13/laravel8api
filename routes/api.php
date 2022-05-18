@@ -39,3 +39,6 @@ Route::delete('/delete-single-user/{id}', [UserApiController::class, 'deleteSing
 
 //api for delete single user with json
 Route::delete('/delete-single-user-json', [UserApiController::class, "deleteSingleUserJson"]);
+
+//api for delete multiple user
+Route::delete('/delete-multiple-user/{ids}', [UserApiController::class, "deleteMultipleUser"]);
