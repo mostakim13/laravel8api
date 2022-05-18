@@ -83,11 +83,40 @@ class UserApiController extends Controller
                 $user = new User();
                 $user->name = $users['name'];
                 $user->email = $users['email'];
-                $user->password = $users['password'];
+                $user->password = bcrypt($data['password']);
                 $user->save();
                 $message = "Multiple user added successfully!";
             }
             return response()->json(["message" => $message], 201);
+        }
+    }
+
+    //update user
+    public function updateUser(Request $request, $id)
+    {
+        if ($request->isMethod("put")) {
+            $data = $request->all();
+
+            $rules = [
+                "name" => "required",
+                "password" => "required"
+            ];
+            $customMessage = [
+                "name" => "Name is required",
+                "password" => "Password is required"
+            ];
+
+            $validator = Validator::make($data, $rules, $customMessage);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+            $user = User::findOrFail($id);
+            $user->name = $data['name'];
+            $user->password = bcrypt($data['password']);
+            $user->save();
+
+            $message = "User updated successfully!";
+            return response()->json(["message" => $message]);
         }
     }
 }
