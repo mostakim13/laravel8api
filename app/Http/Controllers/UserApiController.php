@@ -151,6 +151,18 @@ class UserApiController extends Controller
     {
         User::findOrFail($id)->delete();
         $message = "User deleted successfully!";
-        return response()->json(["message" => $message]);
+        return response()->json(["message" => $message], 200);
+    }
+
+    //delete single user with json
+    public function deleteSingleUserJson(Request $request)
+    {
+        if ($request->isMethod('delete')) {
+            $data = $request->all();
+            User::where('id', $data['id'])->delete();
+
+            $message = "User deleted successfully!";
+            return response()->json(["message" => $message], 200);
+        }
     }
 }
