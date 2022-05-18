@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 
 class UserApiController extends Controller
 {
+
+    //fetch data
     public function showUser($id = null)
     {
         if ($id == '') {
@@ -19,6 +21,8 @@ class UserApiController extends Controller
         }
     }
 
+
+    //add single user
     public function addUser(Request $request)
     {
         if ($request->isMethod('post')) {
@@ -49,6 +53,41 @@ class UserApiController extends Controller
             $user->save();
             $message = 'User successfully added!';
             return response()->json(['message' => $message], 201);
+        }
+    }
+
+    //multiple user add
+    public function addMultipleUser(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $data = $request->all();
+
+            $rules = [
+                "users.*.name" => "required",
+                "users.*.email" => "required|email|unique:users",
+                "users.*.password" => "required",
+            ];
+
+            $customMessage = [
+                "users.*.name.required" => "Name is required",
+                "users.*.email.required" => "Email is required",
+                "users.*.email.email" => "Email must be valid",
+                "users.*.password.required" => "Password is required",
+            ];
+            $validator = Validator::make($data, $rules, $customMessage);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            foreach ($data['users'] as $users) {
+                $user = new User();
+                $user->name = $users['name'];
+                $user->email = $users['email'];
+                $user->password = $users['password'];
+                $user->save();
+                $message = "Multiple user added successfully!";
+            }
+            return response()->json(["message" => $message], 201);
         }
     }
 }
