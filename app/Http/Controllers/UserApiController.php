@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Auth;
 
 class UserApiController extends Controller
 {
@@ -200,7 +201,43 @@ class UserApiController extends Controller
     }
 
     //register Using Passport
-    public function registerApiUsingPassport(Request $request)
+    public function registerUserUsingPassport(Request $request)
     {
+        if ($request->isMethod('post')) {
+            $data = $request->all();
+
+            $rules = [
+                "name" => "required",
+                "email" => "required|email|unique:users",
+                "password" => "required"
+            ];
+            $customMessage = [
+                "name.required" => "Name is required",
+                "email.required" => "Email is required",
+                "email.email" => "Email must be valid",
+                "password.required" => "Password is required"
+            ];
+            $validator = validator::make($data, $rules, $customMessage);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            $user = new User();
+            $user->name = $data['name'];
+            $user->email = $data['email'];
+            $user->password = bcrypt($data['password']);
+            $user->save();
+
+            if (Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
+                $user = User::where('email', $data['email'])->first();
+                $access_token = $user->createToken($data['email'])->accessToken;
+                User::where('email', $data['email'])->update(['access_token' => $access_token]);
+                $message = "User successfully registered";
+                return response()->json(['message' => $message, 'access_token' => $access_token], 201);
+            } else {
+                $message = "Oops! Something went wrong";
+                return response()->json(['message' => $message], 422);
+            }
+        }
     }
 }
